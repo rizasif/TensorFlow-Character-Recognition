@@ -2,10 +2,12 @@ import sys
 import tensorflow as tf
 from PIL import Image,ImageFilter
 
+TOTAL_ELEMENTS = 36
+
 def predictLetter(imvalue):
     x = tf.placeholder(tf.float32, [None, 784])
-    W = tf.Variable(tf.zeros([784, 10]))
-    b = tf.Variable(tf.zeros([10]))
+    W = tf.Variable(tf.zeros([784, TOTAL_ELEMENTS]))
+    b = tf.Variable(tf.zeros([TOTAL_ELEMENTS]))
     y = tf.nn.softmax(tf.matmul(x, W) + b)
 
     init_op = tf.initialize_all_variables()
