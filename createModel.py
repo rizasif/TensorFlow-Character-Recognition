@@ -58,6 +58,10 @@ def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 def getBatchOfLetterImages(batchSize=64):
 	global startIndexOfBatch
 	global imagesPathArray
+
+	assert(startIndexOfBatch)
+	assert(imagesPathArray)
+	
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
 	with tf.Session() as sess:
@@ -120,7 +124,7 @@ with tf.Session() as session:
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 		except Exception as e:
 			# print(e.message)
-			traceback.print_stack()
+			# traceback.print_stack()
 			sys.exit()
 		print(batchX.shape, batchY.shape)
 		session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
