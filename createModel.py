@@ -80,7 +80,7 @@ def getBatchOfLetterImages(batchSize=64):
 						startIndexOfBatch = i+1
 						return labels, dataset
 				except Exception as e:
-					print (e.message)
+					# print (e.message)
 					print("Unexpected Image, it's okay, skipping")
 					sys.exit()
 					
@@ -119,7 +119,7 @@ with tf.Session() as session:
 		try:
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 		except Exception as e:
-			print(e.message)
+			# print(e.message)
 			traceback.print_stack()
 			sys.exit()
 		print(batchX.shape, batchY.shape)
