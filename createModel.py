@@ -58,11 +58,6 @@ def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 def getBatchOfLetterImages(batchSize=64):
 	global startIndexOfBatch
 	global imagesPathArray
-
-	if startIndexOfBatch is None:
-		print("startIndex None")
-	if imagesPathArray is None:
-		print("imagePath None")
 	
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
@@ -85,8 +80,8 @@ def getBatchOfLetterImages(batchSize=64):
 					if(len(labels) >= batchSize):
 						startIndexOfBatch = i+1
 						return labels, dataset
-					else:
-						print("ERROR: Mismatch Batch-Label Sizes {}-{}".format(batchSize, len(labels)))
+					# else:
+					# 	print("ERROR: Mismatch Batch-Label Sizes {}-{}".format(batchSize, len(labels)))
 				except Exception as e:
 					# print (e.message)
 					print("Unexpected Image, it's okay, skipping")
