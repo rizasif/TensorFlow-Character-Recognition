@@ -88,7 +88,7 @@ def getBatchOfLetterImages(batchSize=64):
 				except Exception as e:
 					# print (e.message)
 					print("Unexpected Image, it's okay, skipping")
-					sys.exit()
+					# sys.exit()
 					
 startIndexOfBatch = 0
 imagesPathArray, imagesLabelsArray = getListOfImages()
@@ -122,12 +122,7 @@ with tf.Session() as session:
 	session.run(tf.global_variables_initializer())
 	for i in range(0, trainingLoops):
 		print("Training Loop number: {} of {}".format(i, trainingLoops))
-		try:
-			batchY, batchX = getBatchOfLetterImages(batchSize)
-		except Exception as e:
-			# print(e.message)
-			# traceback.print_stack()
-			sys.exit()
+		batchY, batchX = getBatchOfLetterImages(batchSize)
 		print(batchX.shape, batchY.shape)
 		session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
 	
