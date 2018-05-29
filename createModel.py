@@ -59,8 +59,10 @@ def getBatchOfLetterImages(batchSize=64):
 	global startIndexOfBatch
 	global imagesPathArray
 
-	tf.assert_equal(startIndexOfBatch is None, False, message="Start Index None")
-	tf.assert_equal(imagesPathArray is None, False, message="Image Path None")
+	if startIndexOfBatch is None:
+		print("startIndex None")
+	if imagesPathArray is None:
+		print("imagePath None")
 	
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
