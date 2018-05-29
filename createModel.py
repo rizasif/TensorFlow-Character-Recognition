@@ -3,6 +3,7 @@ import os
 from random import randint
 import numpy as np
 import traceback
+import sys
 
 folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
 			 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
@@ -81,7 +82,7 @@ def getBatchOfLetterImages(batchSize=64):
 				except Exception as e:
 					print (e.message)
 					print("Unexpected Image, it's okay, skipping")
-					assert(False)
+					sys.exit()
 					
 startIndexOfBatch = 0
 imagesPathArray, imagesLabelsArray = getListOfImages()
@@ -115,7 +116,12 @@ with tf.Session() as session:
 	session.run(tf.global_variables_initializer())
 	for i in range(0, trainingLoops):
 		print("Training Loop number: {} of {}".format(i, trainingLoops))
-		batchY, batchX = getBatchOfLetterImages(batchSize)
+		try:
+			batchY, batchX = getBatchOfLetterImages(batchSize)
+		except Exception as e:
+			print(e.message)
+			traceback.print_stack()
+			sys.exit()
 		print(batchX.shape, batchY.shape)
 		session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
 	
