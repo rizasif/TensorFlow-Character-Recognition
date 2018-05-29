@@ -85,6 +85,8 @@ def getBatchOfLetterImages(batchSize=64):
 					if(len(labels) >= batchSize):
 						startIndexOfBatch = i+1
 						return labels, dataset
+					else:
+						print("ERROR: Mismatch Batch-Label Sizes")
 				except Exception as e:
 					# print (e.message)
 					print("Unexpected Image, it's okay, skipping")
