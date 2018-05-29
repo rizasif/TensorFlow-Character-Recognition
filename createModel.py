@@ -86,7 +86,7 @@ def getBatchOfLetterImages(batchSize=64):
 						startIndexOfBatch = i+1
 						return labels, dataset
 					else:
-						print("ERROR: Mismatch Batch-Label Sizes")
+						print("ERROR: Mismatch Batch-Label Sizes {}-{}".format(batchSize, len(labels)))
 				except Exception as e:
 					# print (e.message)
 					print("Unexpected Image, it's okay, skipping")
@@ -109,7 +109,7 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 trainingRate = 0.001
 trainingLoops = 5000
-batchSize = 100
+batchSize = 64
 
 yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
 
