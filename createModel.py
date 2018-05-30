@@ -62,7 +62,9 @@ def getBatchOfLetterImages(batchSize=64):
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
 	with tf.Session() as sess:
-		for i in range(startIndexOfBatch, len(imagesPathArray)):
+		i = startIndexOfBatch
+		# for i in range(startIndexOfBatch, len(imagesPathArray)):
+		while True:
 			pathToImage = imagesLabelsArray[i]+imagesPathArray[i]
 			lastIndexOfSlash = pathToImage.rfind("/")
 			folder = pathToImage[lastIndexOfSlash - 1] 
@@ -80,13 +82,14 @@ def getBatchOfLetterImages(batchSize=64):
 					if(len(labels) >= batchSize):
 						startIndexOfBatch = i+1
 						return labels, dataset
-					elif(startIndexOfBatch >= len(imagesPathArray)):
+					elif(i >= len(imagesPathArray)-1):
 						startIndexOfBatch = 0
-						return labels, dataset
-					else:
-						print("ERROR: Mismatch Batch-Label Sizes {}-{}".format(batchSize, len(labels)))
+						i = 0
+					# else:
+					# 	print("ERROR: Mismatch Batch-Label Sizes {}-{}".format(batchSize, len(labels)))
 				except:
 					print("Unexpected Image, it's okay, skipping ({})".format(str(pathToImage)))
+			i+=1
 					
 startIndexOfBatch = 0
 imagesPathArray, imagesLabelsArray = getListOfImages()
