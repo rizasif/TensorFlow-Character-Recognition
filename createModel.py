@@ -58,10 +58,11 @@ def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 def getBatchOfLetterImages(batchSize=64):
 	global startIndexOfBatch
 	global imagesPathArray
+	global tf_config
 	
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
-	with tf.Session() as sess:
+	with tf.Session(config=tf_config) as sess:
 		i = startIndexOfBatch
 		# for i in range(startIndexOfBatch, len(imagesPathArray)):
 		while True:
@@ -116,10 +117,13 @@ crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
 
 trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
 
-
 saver = tf.train.Saver()
 
-with tf.Session() as session:
+tf_config = tf.ConfigProto(
+	device_count = {'GPU': 0}
+	)
+
+with tf.Session(config=tf_config) as session:
 	session.run(tf.global_variables_initializer())
 	for i in range(0, trainingLoops):
 		print("Training Loop number: {} of {}".format(i, trainingLoops))
