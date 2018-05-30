@@ -107,7 +107,7 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 
 trainingRate = 0.001
-trainingLoops = 5000
+trainingLoops = 500
 batchSize = 100
 
 yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
