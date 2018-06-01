@@ -57,9 +57,9 @@ You have to create a PNG file that contains a handwritten character. The backgro
 ### 3. predict the character
 The easiest way again is to put the image file from the previous step (step 2) in the same directory as the python scripts and cd to the directory where the python files are located. 
 
-The predict scripts require one argument: the file location of the image file containing the handwritten letter. For example when the image file is letter.png’ and is in the same location as the script, run:
+The predict scripts require one argument: the file location of the image file containing the handwritten letter. For example when the image file is test.png’ and is in the same location as the script, run:
 
-```python predict.py letter.png’```
+```python predict.py test.png```
 
 The script, predict.py, uses the model.ckpt file created by the createModel.py script.
 
