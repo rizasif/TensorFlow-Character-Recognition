@@ -105,31 +105,32 @@ W = tf.Variable(tf.truncated_normal([784, TOTAL_ELEMENTS]), dtype=tf.float32, na
 b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="bias_0")
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
-
-
 trainingRate = 0.005
 trainingLoops = 200
 batchSize = 64
 
-yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
-
-crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
-
-trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
-
-saver = tf.train.Saver()
-
 tf_config = tf.ConfigProto(
-	device_count = {'GPU': 0}
-	)
+		device_count = {'GPU': 0}
+		)
 
-with tf.Session(config=tf_config) as session:
-	session.run(tf.global_variables_initializer())
-	for i in range(0, trainingLoops):
-		print("Training Loop number: {} of {}".format(i, trainingLoops))
-		batchY, batchX = getBatchOfLetterImages(batchSize)
-		print(batchX.shape, batchY.shape)
-		session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+def BeginTraining():
+	global tf_config
 	
-	savedPath = saver.save(session, "./model.ckpt")
-	print("Model saved at: " ,savedPath)
+	yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
+
+	crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
+
+	trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
+
+	saver = tf.train.Saver()
+
+	with tf.Session(config=tf_config) as session:
+		session.run(tf.global_variables_initializer())
+		for i in range(0, trainingLoops):
+			print("Training Loop number: {} of {}".format(i, trainingLoops))
+			batchY, batchX = getBatchOfLetterImages(batchSize)
+			print(batchX.shape, batchY.shape)
+			session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+		
+		savedPath = saver.save(session, "./Model/model.ckpt")
+		print("Model saved at: " ,savedPath)
