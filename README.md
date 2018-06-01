@@ -1,27 +1,40 @@
-# TensorFlow<sup>TM</sup> notMNIST predict (recognise handwriting)
+# TensorFlow<sup>TM</sup> EngHand predict (recognise handwriting)
 
 
 ## Installation & Setup
 
 ### Overview
-This project uses the notMNIST tutorial from the TensorFlow website. The tutorial uses a deep learning model.
+This project uses the notMNIST tutorial from the TensorFlow website. The tutorial uses a deep learning model. However the [Chars 74k dataset](http://www.ee.surrey.ac.uk/CVSSP/demos/chars74k/) is used for training. Moreover, a GUI is also available for predicting a single handwritten image.
 
-This projects consists of two scripts: 
+This tensorflow code consists of two scripts: 
 
-1. _createModel.py_ – creates a model model.ckpt file based on the  tutorial.
-3. *predict.py* – uses the model.ckpt (beginners tutorial) file to predict the correct integer form a handwritten letter in a .png file.
+1. _createModel.py_ – creates a model model/model.ckpt file based on the  tutorial.
+2. *predict.py* – uses the model.ckpt (beginners tutorial) file to predict the correct integer form a handwritten letter in a .png file.
+3. *run.py* – uses the Kivy apis to start the GUI.
+
 
 ### Dependencies
 The following Python libraries are required.
 
-- tensorflow - [TensorFlow](https://www.tensorflow.org/)
+- Tensorflow - [TensorFlow](https://www.tensorflow.org/)
+- Kivy - [Kivy](https://kivy.org/#home).
 
 ### Installing TensorFlow
-Of course TensorFlow needs to be installed. The [TensorFlow website](https://www.tensorflow.org/versions/master/get_started/index.html) has a good manual .
+Of course TensorFlow needs to be installed. The [TensorFlow website](https://www.tensorflow.org/versions/master/get_started/index.html) has a good manual. For windows I would suggest the anaconda version. Moreover, the model is built and tested with Python 3.4.
 
+### Installing Kivy
+For using the GUI you need Kivy. The [Kivy installation guide](https://kivy.org/#download) provides a comprehensive tutorial.
+
+
+### Using the GUI
+The easiest way is to start the GUI by running:
+```
+$ python run.py
+```
+The GUI is self explanatory. First provide an image path and click the predict button. An already trained model will provide results.
 
 ### The python scripts
-The easiest way the use the scripts is to put all four scripts in the same folder. If TensorFlow is installed correctly and the images to train the model are present in that folder with the name notMNIST_large, you are good to go.
+In order to use the cmd version of the predictor, the training images are included in the package. The rest is provided below.
 
 ## Running
 Running is based on the steps:
