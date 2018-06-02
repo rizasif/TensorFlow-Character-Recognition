@@ -58,6 +58,7 @@ def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 def getBatchOfLetterImages(batchSize=64):
 	global startIndexOfBatch
 	global imagesPathArray
+	global imagesLabelsArray
 	global tf_config
 	
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
@@ -93,9 +94,8 @@ def getBatchOfLetterImages(batchSize=64):
 			i+=1
 					
 startIndexOfBatch = 0
-imagesPathArray, imagesLabelsArray = getListOfImages()
-imagesPathArray, imagesLabelsArray = shuffleImagesPath(imagesPathArray, imagesLabelsArray)
-
+imagesPathArray = None
+imagesLabelsArray = []
 
 
 tf.reset_default_graph()
@@ -106,7 +106,7 @@ b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="b
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 trainingRate = 0.005
-trainingLoops = 200
+trainingLoops = 5000
 batchSize = 64
 
 tf_config = tf.ConfigProto(
@@ -115,6 +115,11 @@ tf_config = tf.ConfigProto(
 
 def BeginTraining():
 	global tf_config
+	global imagesPathArray
+	global imagesLabelsArray
+
+	imagesPathArray, imagesLabelsArray = getListOfImages()
+	imagesPathArray, imagesLabelsArray = shuffleImagesPath(imagesPathArray, imagesLabelsArray)
 	
 	yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
 
