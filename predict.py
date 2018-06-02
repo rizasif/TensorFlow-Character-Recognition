@@ -109,7 +109,6 @@ def imageprepare(argv):
     return tva
     
 
-
 def main(argv):
     imvalue = imageprepare(argv)
     predictedLetter = predictLetter(imvalue)
