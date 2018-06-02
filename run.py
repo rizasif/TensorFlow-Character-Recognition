@@ -15,20 +15,24 @@ from PIL import Image
 import predict
 import createModel
 
+# Global variables to output messages
 selected_file_path = "No File Selected"
-
 error_message = "[color=f44336]{}[/color]"
 status_message = "{}"
 good_message = "[color=4CAF50]{}[/color]"
 
+# Global reference to main app
 global_mainApp = None
 
+# this class represents the browser to select file 
 class BrowseApp(App):
 	MainApp = None
 
+	# sets main app of browser
 	def setMainAPP(self, MainAPP):
 		self.MainApp = MainAPP
 
+	# called when browser opens
 	def build(self):
 		user_path = dirname(expanduser('~')) + sep + 'Documents'
 		browser = FileBrowser(select_string='Select',
@@ -38,20 +42,25 @@ class BrowseApp(App):
 					on_canceled=self._fbrowser_canceled)
 		return browser
 
+	# called when browser cancelled
 	def _fbrowser_canceled(self, instance):
 		print ('cancelled, Close self.')
 		raise ValueError("No File Selected")
 
+	# called when browser selects file
 	def _fbrowser_success(self, instance):
 		global global_mainApp
 		print (instance.selection)
 		selected_file_path = instance.selection
-		# self.MainAPP.update()
+		
 		print("Main App Value is: ", type(global_mainApp))
-		# App.get_running_app().stop()
-		# sys.exit("Whatever")
+		
+		# Browser throws the selected file string as error
+		# So that the main app can catch it
 		raise ValueError(str(selected_file_path[0]))
 
+# A class to handel parallel processing
+# Used for opneing browser
 class Process(mp.Process):
 	def __init__(self, *args, **kwargs):
 		mp.Process.__init__(self, *args, **kwargs)
@@ -73,6 +82,7 @@ class Process(mp.Process):
 			self._exception = self._pconn.recv()
 		return self._exception
 
+# This function is called when "Select File" Button is pressed
 def btn_browse(pos):
 		global global_mainApp
 		global selected_file_path
@@ -99,6 +109,7 @@ def btn_browse(pos):
 		global_mainApp.update(main_label=path, status=good_message.format("Ready!"))
 		selected_file_path = path	
 
+# This function is called when "Predict" Button is pressed
 def btn_predict(pos):
 	global global_mainApp
 	global selected_file_path
@@ -115,6 +126,7 @@ def btn_predict(pos):
 		# filename not an image file
 		global_mainApp.update(status=error_message.format("Invalid Image or Path"))
 
+# This function is called when "Train" Button is pressed
 def btn_retrain(pos):
 	global global_mainApp
 	global_mainApp.update(status=status_message.format("Training..."))
@@ -122,6 +134,7 @@ def btn_retrain(pos):
 	global_mainApp.update(status=good_message.format("Ready!"))
 
 
+# This is the class that represents the main screen and its buttons
 class RootWidget(BoxLayout):
 	MainLabel = Label(text=selected_file_path)
 	ErrorLabel = Label(text=error_message)
@@ -164,8 +177,7 @@ class RootWidget(BoxLayout):
 	def getOtherLabel(self):
 		return self.ErrorLabel
 
-
-
+# The globally main app class
 class TestApp(App):
 
 	def build(self):
@@ -194,5 +206,6 @@ class TestApp(App):
 		pass
 
 
+# The main function
 if __name__ == '__main__':
 	TestApp().run()
