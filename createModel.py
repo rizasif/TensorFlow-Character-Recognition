@@ -139,3 +139,6 @@ def BeginTraining():
 		
 		savedPath = saver.save(session, "./Model/model.ckpt")
 		print("Model saved at: " ,savedPath)
+
+if __name__ == '__main__':
+	BeginTraining()
