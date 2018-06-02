@@ -106,7 +106,7 @@ b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="b
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 trainingRate = 0.005
-trainingLoops = 5000
+trainingLoops = 2000
 batchSize = 64
 
 tf_config = tf.ConfigProto(
