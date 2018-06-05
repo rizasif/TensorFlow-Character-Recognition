@@ -151,6 +151,10 @@ def BeginTraining():
 	# Here we create a tensorflow session and start training
 	with tf.Session(config=tf_config) as session:
 		session.run(tf.global_variables_initializer())
+		
+		# Here the saver is loading the checkpoint
+		saver.restore(session, "./Model/model.ckpt")
+		
 		for i in range(0, trainingLoops):
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
 			batchY, batchX = getBatchOfLetterImages(batchSize)
