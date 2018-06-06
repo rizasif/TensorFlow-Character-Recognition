@@ -22,7 +22,10 @@ datasetFolder = "/Data/training"
 
 # Total number of elements or charachters (A-Z, 0-9), which will equal to 36
 TOTAL_ELEMENTS = len(folders) #36
-			
+
+# Size of the reduced image
+IMAGE_SIZE = 28
+
 startIndexOfBatch = 0
 imagesPathArray = None
 imagesLabelsArray = []
@@ -38,7 +41,7 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
 trainingRate = 0.005
-trainingLoops = 2000
+trainingLoops = 50
 batchSize = 64
 
 # Tensorflow configuration to use CPU instead of GPU
@@ -106,7 +109,7 @@ def getBatchOfLetterImages(batchSize=64):
 				try:
 					imageContents = tf.read_file(str(pathToImage))
 					image = tf.image.decode_png(imageContents, dtype=tf.uint8, channels=1)
-					resized_image = tf.image.resize_images(image, [28, 28]) 
+					resized_image = tf.image.resize_images(image, [IMAGE_SIZE, IMAGE_SIZE]) 
 					imarray = resized_image.eval()
 					imarray = imarray.reshape(784)
 					appendingImageArray = np.array([imarray], dtype=np.float32)
