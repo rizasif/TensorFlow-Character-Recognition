@@ -5,6 +5,9 @@ from PIL import Image,ImageFilter
 # Total number of charachters to predict from
 TOTAL_ELEMENTS = 36
 
+# Size of reduced image
+IMAGE_SIZE = 28
+
 # This is the function to predict the letter
 def predictLetter(imvalue):
 
@@ -47,8 +50,8 @@ def getImage(image):
     width = float(im.size[0])
     height = float(im.size[1])
 
-    # Resizing the image to 28x28
-    newImage = Image.new('L', (28, 28), (255)) 
+    # Resizing the image to IMAGE_SIZExIMAGE_SIZE
+    newImage = Image.new('L', (IMAGE_SIZE, IMAGE_SIZE), (255)) 
     
     # Checking orientation of image and processing accordingly
     if width > height: 
@@ -56,7 +59,7 @@ def getImage(image):
         if (nheight == 0): 
             nheight = 1
         img = im.resize((20,nheight), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wtop = int(round(((28 - nheight)/2),0)) 
+        wtop = int(round(((IMAGE_SIZE - nheight)/2),0)) 
         newImage.paste(img, (4, wtop)) 
     else:
         nwidth = int(round((20.0/height*width),0)) 
@@ -64,7 +67,7 @@ def getImage(image):
             nwidth = 1
          
         img = im.resize((nwidth,20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wleft = int(round(((28 - nwidth)/2),0)) 
+        wleft = int(round(((IMAGE_SIZE - nwidth)/2),0)) 
         newImage.paste(img, (wleft, 4)) 
     
     
@@ -81,14 +84,14 @@ def imageprepare(argv):
     im = Image.open(argv).convert('L')
     width = float(im.size[0])
     height = float(im.size[1])
-    newImage = Image.new('L', (28, 28), (255)) 
+    newImage = Image.new('L', (IMAGE_SIZE, IMAGE_SIZE), (255)) 
     
     if width > height: 
         nheight = int(round((20.0/width*height),0)) 
         if (nheight == 0): 
             nheight = 1
         img = im.resize((20,nheight), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wtop = int(round(((28 - nheight)/2),0)) 
+        wtop = int(round(((IMAGE_SIZE - nheight)/2),0)) 
         newImage.paste(img, (4, wtop)) 
     else:
         
@@ -97,7 +100,7 @@ def imageprepare(argv):
             nwidth = 1
          
         img = im.resize((nwidth,20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wleft = int(round(((28 - nwidth)/2),0)) 
+        wleft = int(round(((IMAGE_SIZE - nwidth)/2),0)) 
         newImage.paste(img, (wleft, 4)) 
     
     
