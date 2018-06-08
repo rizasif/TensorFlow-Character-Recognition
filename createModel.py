@@ -162,8 +162,9 @@ def BeginTraining():
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 			print(batchX.shape, batchY.shape)
-			_, loss_val = session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
-			print("Loss = {}".format(loss_val))
+			session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+			# _, loss_val = session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+			# print("Loss = {}".format(loss_val))
 		
 		savedPath = saver.save(session, "./Model/model.ckpt")
 		print("Model saved at: " ,savedPath)
