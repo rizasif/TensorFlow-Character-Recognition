@@ -155,6 +155,7 @@ def BeginTraining():
 		
 		# Here the saver is loading the checkpoint
 		if os.path.isfile("./Model/checkpoint"):
+			print("Restoring Model")
 			saver.restore(session, "./Model/model.ckpt")
 		
 		for i in range(0, trainingLoops):
