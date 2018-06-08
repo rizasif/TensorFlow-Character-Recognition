@@ -39,7 +39,7 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
 trainingRate = 0.005
-trainingLoops = 300
+trainingLoops = 150
 batchSize = 64
 
 # Tensorflow configuration to use CPU instead of GPU
