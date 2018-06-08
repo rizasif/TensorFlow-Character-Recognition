@@ -98,7 +98,9 @@ def getBatchOfLetterImages(batchSize=64):
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
 	with tf.Session(config=tf_config) as sess:
 		i = startIndexOfBatch
-		# for i in range(startIndexOfBatch, len(imagesPathArray)):
+		if(i >= len(imagesPathArray)-1):
+			startIndexOfBatch = 0
+			i = 0
 		while True:
 			pathToImage = imagesLabelsArray[i]+imagesPathArray[i]
 			lastIndexOfSlash = pathToImage.rfind("/")
