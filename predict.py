@@ -3,7 +3,7 @@ import tensorflow as tf
 from PIL import Image,ImageFilter
 
 # Total number of charachters to predict from
-TOTAL_ELEMENTS = 36
+TOTAL_ELEMENTS = 10
 
 # Size of reduced image
 IMAGE_SIZE = 28

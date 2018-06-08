@@ -10,9 +10,7 @@ import sys
 # These following variables have no function block and are thus global variables
 
 # The list of folders to be trained
-folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-			 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-			 "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 # A string to represent working directory. "." means the current directory/folder.
 root = "."
@@ -41,7 +39,7 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
 trainingRate = 0.005
-trainingLoops = 50
+trainingLoops = 300
 batchSize = 64
 
 # Tensorflow configuration to use CPU instead of GPU
@@ -156,13 +154,15 @@ def BeginTraining():
 		session.run(tf.global_variables_initializer())
 		
 		# Here the saver is loading the checkpoint
-		saver.restore(session, "./Model/model.ckpt")
+		if os.path.isfile("./Model/checkpoint"):
+			saver.restore(session, "./Model/model.ckpt")
 		
 		for i in range(0, trainingLoops):
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 			print(batchX.shape, batchY.shape)
-			session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+			_, loss_val = session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+			print("Loss = {}".format(loss_val))
 		
 		savedPath = saver.save(session, "./Model/model.ckpt")
 		print("Model saved at: " ,savedPath)
