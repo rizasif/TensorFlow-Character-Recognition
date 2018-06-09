@@ -39,8 +39,8 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
 trainingRate = 0.005
-trainingLoops = 150
-batchSize = 64
+trainingLoops = 300
+batchSize = 4
 
 # Tensorflow configuration to use CPU instead of GPU
 tf_config = tf.ConfigProto(
@@ -51,7 +51,9 @@ tf_config = tf.ConfigProto(
 def getNumber(alphabet):
 	for i in range(TOTAL_ELEMENTS):
 		if(alphabet == folders[i]):
-			return np.eye(TOTAL_ELEMENTS, dtype=np.float32)[i]
+			number = np.eye(TOTAL_ELEMENTS, dtype=np.float32)[i]
+			# print("Number for {} is : {}".format(alphabet, number))
+			return number
 
 	# This should happen if the alphabet doesnt matches list
 	assert(False)
@@ -93,6 +95,7 @@ def getBatchOfLetterImages(batchSize=64):
 	global imagesPathArray
 	global imagesLabelsArray
 	global tf_config
+	global TOTAL_ELEMENTS
 	
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
@@ -143,7 +146,8 @@ def BeginTraining():
 	yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
 
 	# This is the error function
-	crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
+	# crossEntropy = -tf.reduce_sum( yTrained * tf.log(y + (1e-50) ))
+	crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
 
 	# This variable represents each training step
 	trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
