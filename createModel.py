@@ -41,7 +41,7 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
 trainingRate = 0.005
-trainingLoops = 50
+trainingLoops = 300
 batchSize = 64
 
 # Tensorflow configuration to use CPU instead of GPU
@@ -100,6 +100,9 @@ def getBatchOfLetterImages(batchSize=64):
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
 	with tf.Session(config=tf_config) as sess:
 		i = startIndexOfBatch
+		if(i >= len(imagesPathArray)-1):
+			startIndexOfBatch = 0
+			i = 0
 		# for i in range(startIndexOfBatch, len(imagesPathArray)):
 		while True:
 			pathToImage = imagesLabelsArray[i]+imagesPathArray[i]
@@ -143,7 +146,8 @@ def BeginTraining():
 	yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
 
 	# This is the error function
-	crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
+	# crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
+	crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
 
 	# This variable represents each training step
 	trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
@@ -156,7 +160,9 @@ def BeginTraining():
 		session.run(tf.global_variables_initializer())
 		
 		# Here the saver is loading the checkpoint
-		saver.restore(session, "./Model/model.ckpt")
+		if os.path.isfile("./Model/checkpoint"):
+			print("Restoring Model")
+			saver.restore(session, "./Model/model.ckpt")
 		
 		for i in range(0, trainingLoops):
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
