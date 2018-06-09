@@ -8,6 +8,11 @@ TOTAL_ELEMENTS = 36
 # Size of reduced image
 IMAGE_SIZE = 28
 
+# For printing
+folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+			 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+			 "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+
 # This is the function to predict the letter
 def predictLetter(imvalue):
 
@@ -115,7 +120,7 @@ def imageprepare(argv):
 def main(argv):
     imvalue = imageprepare(argv)
     predictedLetter = predictLetter(imvalue)
-    print (predictedLetter[0]) 
+    print (folders[predictedLetter[0]] )
     
 if __name__ == "__main__":
     # Whenever the script runs independently this main function is called
