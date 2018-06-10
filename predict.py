@@ -43,7 +43,8 @@ def predictLetter(imvalue):
         saver.restore(sess, "./Model/model.ckpt")
    
         prediction=tf.argmax(y,1)
-        return prediction.eval(feed_dict={x: [imvalue]}, session=sess)
+        index = prediction.eval(feed_dict={x: [imvalue]}, session=sess)
+        return folders[index[0]]
 
 # This function prepares the image
 def getImage(image):
@@ -120,7 +121,7 @@ def imageprepare(argv):
 def main(argv):
     imvalue = imageprepare(argv)
     predictedLetter = predictLetter(imvalue)
-    print (folders[predictedLetter[0]] )
+    print (predictedLetter)
     
 if __name__ == "__main__":
     # Whenever the script runs independently this main function is called
