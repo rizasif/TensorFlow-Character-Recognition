@@ -39,7 +39,7 @@ y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
 trainingRate = 0.005
-trainingLoops = 300
+trainingLoops = 50
 batchSize = 4
 
 # Tensorflow configuration to use CPU instead of GPU
@@ -150,7 +150,8 @@ def BeginTraining():
 	crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
 
 	# This variable represents each training step
-	trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
+	# trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
+	trainStep = tf.train.AdamOptimizer(trainingRate).minimize(crossEntropy)
 
 	# This object saves the model when training is completed
 	saver = tf.train.Saver()
@@ -168,9 +169,9 @@ def BeginTraining():
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 			print(batchX.shape, batchY.shape)
-			session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
-			# _, loss_val = session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
-			# print("Loss = {}".format(loss_val))
+			# session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+			_, loss_val = session.run([trainStep, crossEntropy], feed_dict={x: batchX, yTrained: batchY})
+			print("Loss = {}".format(loss_val))
 		
 		savedPath = saver.save(session, "./Model/model.ckpt")
 		print("Model saved at: " ,savedPath)

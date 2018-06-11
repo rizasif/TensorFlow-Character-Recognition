@@ -76,7 +76,8 @@ def getImage(image):
     tv = list(newImage.getdata()) 
     
     
-    tva = [ (255-x)*1.0/255.0 for x in tv] 
+    # tva = [ (255-x)*1.0/255.0 for x in tv]
+    tva = tv 
     return tva
 
 # This function reads and prepares the image, you can ignore this for now
