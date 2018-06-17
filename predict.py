@@ -3,6 +3,8 @@ import tensorflow as tf
 from PIL import Image,ImageFilter
 import numpy as np
 
+folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
 # Total number of charachters to predict from
 TOTAL_ELEMENTS = 10
 
@@ -23,9 +25,9 @@ def predictLetter(imvalue):
 
     # number of neurons in each layer
     input_num_units = IMAGE_SIZE*IMAGE_SIZE
-    hidden_num_units = int(input_num_units/2)
-    hidden_num_units2 = int(hidden_num_units/2)
-    # hidden_num_units2 = IMAGE_SIZE + 0 #784
+    # hidden_num_units = int(input_num_units/2)
+    # hidden_num_units2 = int(hidden_num_units/2)
+    hidden_num_units = 784
     output_num_units = TOTAL_ELEMENTS
 
     # define placeholders
@@ -36,13 +38,11 @@ def predictLetter(imvalue):
 
     weights = {
         'hidden': tf.Variable(tf.random_normal([input_num_units, hidden_num_units])),
-        'hidden2': tf.Variable(tf.random_normal([hidden_num_units, hidden_num_units2])),
-        'output': tf.Variable(tf.random_normal([hidden_num_units2, output_num_units]))
+        'output': tf.Variable(tf.random_normal([hidden_num_units, output_num_units]))
     }
 
     biases = {
         'hidden': tf.Variable(tf.random_normal([hidden_num_units])),
-        'hidden2': tf.Variable(tf.random_normal([hidden_num_units2])),
         'output': tf.Variable(tf.random_normal([output_num_units]))
     }
 
@@ -50,10 +50,7 @@ def predictLetter(imvalue):
     # hidden_layer = tf.nn.relu(hidden_layer)
     hidden_layer = tf.nn.leaky_relu(hidden_layer)
 
-    hidden_layer2 = tf.add(tf.matmul(hidden_layer, weights['hidden2']), biases['hidden2'])
-    hidden_layer2 = tf.nn.leaky_relu(hidden_layer2)
-
-    output_layer = tf.matmul(hidden_layer2, weights['output']) + biases['output']
+    output_layer = tf.matmul(hidden_layer, weights['output']) + biases['output']
 
     # Initializing all components
     init_op = tf.global_variables_initializer()
@@ -88,7 +85,23 @@ def getImage(image):
 
     # Resizing the image to IMAGE_SIZExIMAGE_SIZE
     newImage = Image.new('L', (IMAGE_SIZE, IMAGE_SIZE), (255)) 
-    
+
+    if width > height: 
+        nheight = int(round((20.0/width*height),0)) 
+        if (nheight == 0): 
+            nheight = 1
+        img = im.resize((20,nheight), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
+        wtop = int(round(((IMAGE_SIZE - nheight)/2),0)) 
+        newImage.paste(img, (4, wtop)) 
+    else:
+        
+        nwidth = int(round((20.0/height*width),0)) 
+        if (nwidth == 0): 
+            nwidth = 1
+         
+        img = im.resize((nwidth,20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
+        wleft = int(round(((IMAGE_SIZE - nwidth)/2),0)) 
+        newImage.paste(img, (wleft, 4))     
     
     # Storing the processed image in a list (here the list has only this image)
     tv = list(newImage.getdata()) 
@@ -138,22 +151,22 @@ def imageprepare(argv):
     height = float(im.size[1])
     newImage = Image.new('L', (IMAGE_SIZE, IMAGE_SIZE), (255)) 
     
-    # if width > height: 
-    #     nheight = int(round((20.0/width*height),0)) 
-    #     if (nheight == 0): 
-    #         nheight = 1
-    #     img = im.resize((20,nheight), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-    #     wtop = int(round(((IMAGE_SIZE - nheight)/2),0)) 
-    #     newImage.paste(img, (4, wtop)) 
-    # else:
+    if width > height: 
+        nheight = int(round((20.0/width*height),0)) 
+        if (nheight == 0): 
+            nheight = 1
+        img = im.resize((20,nheight), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
+        wtop = int(round(((IMAGE_SIZE - nheight)/2),0)) 
+        newImage.paste(img, (4, wtop)) 
+    else:
         
-    #     nwidth = int(round((20.0/height*width),0)) 
-    #     if (nwidth == 0): 
-    #         nwidth = 1
+        nwidth = int(round((20.0/height*width),0)) 
+        if (nwidth == 0): 
+            nwidth = 1
          
-    #     img = im.resize((nwidth,20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-    #     wleft = int(round(((IMAGE_SIZE - nwidth)/2),0)) 
-    #     newImage.paste(img, (wleft, 4)) 
+        img = im.resize((nwidth,20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
+        wleft = int(round(((IMAGE_SIZE - nwidth)/2),0)) 
+        newImage.paste(img, (wleft, 4)) 
     
     
 
@@ -168,7 +181,7 @@ def main(argv):
     imvalue = imageprepare(argv)
     predictedLetter = predictLetter(imvalue)
     print (predictedLetter) 
-    print (np.argmax(predictedLetter, 1))
+    print (folders[np.argmax(predictedLetter, 1)[0]])
     
 if __name__ == "__main__":
     # Whenever the script runs independently this main function is called
