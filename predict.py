@@ -1,6 +1,7 @@
 import sys
 import tensorflow as tf
 from PIL import Image,ImageFilter
+import numpy as np
 
 # Total number of charachters to predict from
 TOTAL_ELEMENTS = 36
@@ -10,8 +11,8 @@ IMAGE_SIZE = 28
 
 # For printing
 folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-			 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-			 "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+             "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+             "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
 # This is the function to predict the letter
 def predictLetter(imvalue):
@@ -50,7 +51,18 @@ def predictLetter(imvalue):
 def getImage(image):
 
     # Converting image to gray scale
-    im = image.convert('L')
+    # im = image.convert('L')
+
+    im_g = image.convert('L')
+    im_g_a = np.asarray(im_g)
+    mask = im_g_a < 255
+    coords = np.argwhere(mask)
+    x0,y0 = coords.min(axis=0)
+    x1,y1 = coords.max(axis=0)
+    if( (x1-x0 > (y1-y0)) ):
+        im = im_g.crop((x0,x0,x1,x1))
+    else:
+        im = im_g.crop((y0,y0,y1,y1))
 
     # Getting width and height of image
     width = float(im.size[0])
@@ -59,7 +71,7 @@ def getImage(image):
     # Resizing the image to IMAGE_SIZExIMAGE_SIZE
     newImage = Image.new('L', (IMAGE_SIZE, IMAGE_SIZE), (255)) 
     
-    # Checking orientation of image and processing accordingly
+    # # Checking orientation of image and processing accordingly
     if width > height: 
         nheight = int(round((20.0/width*height),0)) 
         if (nheight == 0): 
@@ -83,43 +95,11 @@ def getImage(image):
     
     tva = [ (255-x)*1.0/255.0 for x in tv] 
     return tva
-
-# This function reads and prepares the image, you can ignore this for now
-def imageprepare(argv):
-
-    im = Image.open(argv).convert('L')
-    width = float(im.size[0])
-    height = float(im.size[1])
-    newImage = Image.new('L', (IMAGE_SIZE, IMAGE_SIZE), (255)) 
-    
-    if width > height: 
-        nheight = int(round((20.0/width*height),0)) 
-        if (nheight == 0): 
-            nheight = 1
-        img = im.resize((20,nheight), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wtop = int(round(((IMAGE_SIZE - nheight)/2),0)) 
-        newImage.paste(img, (4, wtop)) 
-    else:
-        
-        nwidth = int(round((20.0/height*width),0)) 
-        if (nwidth == 0): 
-            nwidth = 1
-         
-        img = im.resize((nwidth,20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wleft = int(round(((IMAGE_SIZE - nwidth)/2),0)) 
-        newImage.paste(img, (wleft, 4)) 
-    
-    
-
-    tv = list(newImage.getdata()) 
-    
-    
-    tva = [ (255-x)*1.0/255.0 for x in tv] 
-    return tva
     
 
 def main(argv):
-    imvalue = imageprepare(argv)
+    im = Image.open(argv).convert('L')
+    imvalue = getImage(im)
     predictedLetter = predictLetter(imvalue)
     print (predictedLetter)
     print (folders[predictedLetter[0]] )

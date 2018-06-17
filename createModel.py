@@ -4,6 +4,7 @@ from random import randint
 import numpy as np
 import traceback
 import sys
+from PIL import Image
 
 # The following code is run whenever this python script is instantiated
 # i.e either run or imported
@@ -40,9 +41,9 @@ b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="b
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
-trainingRate = 0.05
-trainingLoops = 100
-batchSize = 16
+trainingRate = 0.0001
+trainingLoops = 50
+batchSize = 8
 
 # Tensorflow configuration to use CPU instead of GPU
 tf_config = tf.ConfigProto(
@@ -88,6 +89,21 @@ def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 		imagesLabelsArray[randomIndex1], imagesLabelsArray[randomIndex2] = imagesLabelsArray[randomIndex2], imagesLabelsArray[randomIndex1]
 	return imagesPathArray, imagesLabelsArray
 
+def get_and_preprocess(path):
+	im = Image.open(path)
+	im_g = im.convert('L')
+	im_g_a = np.asarray(im_g)
+	mask = im_g_a < 255
+	coords = np.argwhere(mask)
+	x0,y0 = coords.min(axis=0)
+	x1,y1 = coords.max(axis=0)
+	if( (x1-x0 > (y1-y0)) ):
+		im_crop = im.crop((x0,x0,x1,x1))
+	else:
+		im_crop = im.crop((y0,y0,y1,y1))
+	
+	tf_image = tf.convert_to_tensor(np.asarray(im_crop), dtype=tf.uint8)
+	return tf.image.rgb_to_grayscale(tf_image)
 
 # This function returns the batch of images to be trained at each step
 def getBatchOfLetterImages(batchSize=64):
@@ -110,8 +126,9 @@ def getBatchOfLetterImages(batchSize=64):
 			folder = pathToImage[lastIndexOfSlash - 1] 
 			if(not pathToImage.endswith(".DS_Store")):
 				try:
-					imageContents = tf.read_file(str(pathToImage))
-					image = tf.image.decode_png(imageContents, dtype=tf.uint8, channels=1)
+					# imageContents = tf.read_file(str(pathToImage))
+					# image = tf.image.decode_png(imageContents, dtype=tf.uint8, channels=1)
+					image = get_and_preprocess(str(pathToImage))
 					resized_image = tf.image.resize_images(image, [IMAGE_SIZE, IMAGE_SIZE]) 
 					imarray = resized_image.eval()
 					imarray = imarray.reshape(784)
@@ -127,8 +144,9 @@ def getBatchOfLetterImages(batchSize=64):
 						i = 0
 					# else:
 					# 	print("ERROR: Mismatch Batch-Label Sizes {}-{}".format(batchSize, len(labels)))
-				except:
+				except Exception as e:
 					print("Unexpected Image, it's okay, skipping ({})".format(str(pathToImage)))
+					print(e)
 			i+=1
 
 # This is the function to begin the training process
