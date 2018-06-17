@@ -122,6 +122,7 @@ def main(argv):
     imvalue = imageprepare(argv)
     predictedLetter = predictLetter(imvalue)
     print (predictedLetter)
+    print (folders[predictedLetter[0]] )
     
 if __name__ == "__main__":
     # Whenever the script runs independently this main function is called
