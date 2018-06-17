@@ -31,16 +31,52 @@ imagesLabelsArray = []
 # Initializes the tensorflow graph
 tf.reset_default_graph()
 
-# The tendorflow graph components
-x = tf.placeholder(tf.float32, shape=[None, 784])
-W = tf.Variable(tf.truncated_normal([784, TOTAL_ELEMENTS]), dtype=tf.float32, name="weights_0")
-b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="bias_0")
-y = tf.nn.softmax(tf.matmul(x, W) + b)
+# # The tendorflow graph components
+# x = tf.placeholder(tf.float32, shape=[None, 784])
+# W = tf.Variable(tf.truncated_normal([784, TOTAL_ELEMENTS]), dtype=tf.float32, name="weights_0")
+# b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="bias_0")
+# y = tf.nn.softmax(tf.matmul(x, W) + b)
+
+### set all variables
+
+# number of neurons in each layer
+input_num_units = IMAGE_SIZE*IMAGE_SIZE
+hidden_num_units = int(input_num_units/2)
+hidden_num_units2 = int(hidden_num_units/2)
+# hidden_num_units2 = IMAGE_SIZE + 0 #784
+output_num_units = TOTAL_ELEMENTS
+
+# define placeholders
+x = tf.placeholder(tf.float32, [None, input_num_units])
+y = tf.placeholder(tf.float32, [None, output_num_units])
+
+### define weights and biases of the neural network (refer this article if you don't understand the terminologies)
+
+weights = {
+    'hidden': tf.Variable(tf.random_normal([input_num_units, hidden_num_units])),
+	'hidden2': tf.Variable(tf.random_normal([hidden_num_units, hidden_num_units2])),
+    'output': tf.Variable(tf.random_normal([hidden_num_units2, output_num_units]))
+}
+
+biases = {
+    'hidden': tf.Variable(tf.random_normal([hidden_num_units])),
+	'hidden2': tf.Variable(tf.random_normal([hidden_num_units2])),
+    'output': tf.Variable(tf.random_normal([output_num_units]))
+}
+
+hidden_layer = tf.add(tf.matmul(x, weights['hidden']), biases['hidden'])
+# hidden_layer = tf.nn.relu(hidden_layer)
+hidden_layer = tf.nn.leaky_relu(hidden_layer)
+
+hidden_layer2 = tf.add(tf.matmul(hidden_layer, weights['hidden2']), biases['hidden2'])
+hidden_layer2 = tf.nn.leaky_relu(hidden_layer2)
+
+output_layer = tf.matmul(hidden_layer2, weights['output']) + biases['output']
 
 # Training Parameters
-trainingRate = 0.005
+trainingRate = 0.0001
 trainingLoops = 50
-batchSize = 4
+batchSize = 8
 
 # Tensorflow configuration to use CPU instead of GPU
 tf_config = tf.ConfigProto(
@@ -143,11 +179,12 @@ def BeginTraining():
 	imagesPathArray, imagesLabelsArray = shuffleImagesPath(imagesPathArray, imagesLabelsArray)
 	
 	# Here we specify the neural net output
-	yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
+	# yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
 
 	# This is the error function
 	# crossEntropy = -tf.reduce_sum( yTrained * tf.log(y + (1e-50) ))
-	crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
+	# crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
+	crossEntropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=output_layer, labels=y))
 
 	# This variable represents each training step
 	# trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
@@ -170,7 +207,7 @@ def BeginTraining():
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 			print(batchX.shape, batchY.shape)
 			# session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
-			_, loss_val = session.run([trainStep, crossEntropy], feed_dict={x: batchX, yTrained: batchY})
+			_, loss_val = session.run([trainStep, crossEntropy], feed_dict={x: batchX, y: batchY})
 			print("Loss = {}".format(loss_val))
 		
 		savedPath = saver.save(session, "./Model/model.ckpt")
