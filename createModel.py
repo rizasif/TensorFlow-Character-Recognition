@@ -90,7 +90,7 @@ def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 	return imagesPathArray, imagesLabelsArray
 
 def get_and_preprocess(path):
-	im = Image.open(path)
+    	im = Image.open(path)
 	im_g = im.convert('L')
 	im_g_a = np.asarray(im_g)
 	mask = im_g_a < 255
