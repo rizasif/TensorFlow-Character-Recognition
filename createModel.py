@@ -40,9 +40,9 @@ b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="b
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Training Parameters
-trainingRate = 0.005
-trainingLoops = 300
-batchSize = 64
+trainingRate = 0.05
+trainingLoops = 100
+batchSize = 16
 
 # Tensorflow configuration to use CPU instead of GPU
 tf_config = tf.ConfigProto(
@@ -147,7 +147,8 @@ def BeginTraining():
 
 	# This is the error function
 	# crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
-	crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
+	crossEntropy = -tf.reduce_sum(yTrained * tf.log(y+1e-20))
+	# crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
 
 	# This variable represents each training step
 	trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
@@ -168,7 +169,8 @@ def BeginTraining():
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 			print(batchX.shape, batchY.shape)
-			session.run(trainStep, feed_dict={x: batchX, yTrained: batchY})
+			_, error = session.run([trainStep, crossEntropy] , feed_dict={x: batchX, yTrained: batchY})
+			print("Error: ", error)
 		
 		savedPath = saver.save(session, "./Model/model.ckpt")
 		print("Model saved at: " ,savedPath)
