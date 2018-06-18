@@ -34,16 +34,61 @@ imagesLabelsArray = []
 # Initializes the tensorflow graph
 tf.reset_default_graph()
 
-# The tendorflow graph components
-x = tf.placeholder(tf.float32, shape=[None, 784])
-W = tf.Variable(tf.truncated_normal([784, TOTAL_ELEMENTS]), dtype=tf.float32, name="weights_0")
-b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]), dtype=tf.float32, name="bias_0")
+# Create the model
+x = tf.placeholder(tf.float32, [None, 784])
+y_ = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
+W = tf.Variable(tf.zeros([784, TOTAL_ELEMENTS]))
+b = tf.Variable(tf.zeros([TOTAL_ELEMENTS]))
 y = tf.nn.softmax(tf.matmul(x, W) + b)
+
+def weight_variable(shape):
+	initial = tf.truncated_normal(shape, stddev=0.1)
+	return tf.Variable(initial)
+
+def bias_variable(shape):
+	initial = tf.constant(0.1, shape=shape)
+	return tf.Variable(initial)
+
+
+def conv2d(x, W):
+	return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+
+def max_pool_2x2(x):
+	return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+
+
+W_conv1 = weight_variable([5, 5, 1, 32])
+b_conv1 = bias_variable([32])
+
+x_image = tf.reshape(x, [-1,28,28,1])
+h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+h_pool1 = max_pool_2x2(h_conv1)
+
+
+W_conv2 = weight_variable([5, 5, 32, 64])
+b_conv2 = bias_variable([64])
+
+h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+h_pool2 = max_pool_2x2(h_conv2)
+
+W_fc1 = weight_variable([7 * 7 * 64, 1024])
+b_fc1 = bias_variable([1024])
+
+h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])
+h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+
+keep_prob = tf.placeholder(tf.float32)
+h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+
+W_fc2 = weight_variable([1024, TOTAL_ELEMENTS])
+b_fc2 = bias_variable([TOTAL_ELEMENTS])
+
+y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 # Training Parameters
 trainingRate = 0.0001
-trainingLoops = 300
-batchSize = 16
+trainingLoops = 100
+batchSize = 128
 
 # Tensorflow configuration to use CPU instead of GPU
 tf_config = tf.ConfigProto(
@@ -160,16 +205,12 @@ def BeginTraining():
 	imagesPathArray, imagesLabelsArray = getListOfImages()
 	imagesPathArray, imagesLabelsArray = shuffleImagesPath(imagesPathArray, imagesLabelsArray)
 	
-	# Here we specify the neural net output
-	yTrained = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
-
-	# This is the error function
-	# crossEntropy = -tf.reduce_sum(yTrained * tf.log(y))
-	crossEntropy = -tf.reduce_sum(yTrained * tf.log(y+1e-20))
-	# crossEntropy = -tf.reduce_sum( yTrained * tf.log( tf.clip_by_value(y, 1e-10, 1.0) ))
-
-	# This variable represents each training step
-	trainStep = tf.train.GradientDescentOptimizer(trainingRate).minimize(crossEntropy)
+	# Define loss and optimizer
+	# cross_entropy = -tf.reduce_sum(y_*tf.log(y_conv))
+	cross_entropy = -tf.reduce_sum(y_*tf.log( tf.clip_by_value(y_conv, 1e-10, 1.0) ))
+	train_step = tf.train.AdamOptimizer(trainingRate).minimize(cross_entropy)
+	correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
+	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 	# This object saves the model when training is completed
 	saver = tf.train.Saver()
@@ -187,8 +228,11 @@ def BeginTraining():
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 			print(batchX.shape, batchY.shape)
-			_, error = session.run([trainStep, crossEntropy] , feed_dict={x: batchX, yTrained: batchY})
-			print("Error: ", error)
+			if i%10 == 0:
+				train_accuracy = accuracy.eval(feed_dict={x:batchX, y_: batchY, keep_prob: 1.0})
+				print("step %d, training accuracy %g"%(i, train_accuracy))
+				
+			train_step.run(feed_dict={x: batchX, y_: batchY, keep_prob: 0.5})
 		
 		savedPath = saver.save(session, "./Model/model.ckpt")
 		print("Model saved at: " ,savedPath)
