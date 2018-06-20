@@ -11,9 +11,9 @@ from PIL import Image
 # These following variables have no function block and are thus global variables
 
 # The list of folders to be trained
-folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-			 "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-			 "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+folders = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+			#  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+			#  "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
 # A string to represent working directory. "." means the current directory/folder.
 root = "."
@@ -37,8 +37,8 @@ tf.reset_default_graph()
 # Create the model
 x = tf.placeholder(tf.float32, [None, 784])
 y_ = tf.placeholder(tf.float32, [None, TOTAL_ELEMENTS])
-W = tf.Variable(tf.zeros([784, TOTAL_ELEMENTS]))
-b = tf.Variable(tf.zeros([TOTAL_ELEMENTS]))
+W = tf.Variable(tf.truncated_normal([784, TOTAL_ELEMENTS]))
+b = tf.Variable(tf.truncated_normal([TOTAL_ELEMENTS]))
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 def weight_variable(shape):
@@ -83,12 +83,13 @@ h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 W_fc2 = weight_variable([1024, TOTAL_ELEMENTS])
 b_fc2 = bias_variable([TOTAL_ELEMENTS])
 
-y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+# y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+y_conv=tf.nn.softplus(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 # Training Parameters
-trainingRate = 0.0001
-trainingLoops = 100
-batchSize = 128
+trainingRate = 0.00001
+trainingLoops = 500
+batchSize = 16
 
 # Tensorflow configuration to use CPU instead of GPU
 tf_config = tf.ConfigProto(
@@ -118,20 +119,18 @@ def getListOfImages():
 		allImagesArray = np.append(allImagesArray, imagesName)
 		for i in range(0, len(imagesName)):
 			if(i % 500 == 0):
-				print("progress -> ", i)
+				print("progress -> {} of {}".format(i, len(imagesName)))
 			allImagesLabelsArray = np.append(allImagesLabelsArray, currentAlphabetFolder)
 	return allImagesArray, allImagesLabelsArray
 
-# Shuffling images for training
 def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 	print("Size of imagesPathArray is: ", len(imagesPathArray))
-	for i in range(0, 100000):
-		if(i % 1000 == 0):
-			print("Shuflling in Progress -> ", i)
-		randomIndex1 = randint(0, len(imagesPathArray)-1)
-		randomIndex2 = randint(0, len(imagesPathArray)-1)
-		imagesPathArray[randomIndex1], imagesPathArray[randomIndex2] = imagesPathArray[randomIndex2], imagesPathArray[randomIndex1]
-		imagesLabelsArray[randomIndex1], imagesLabelsArray[randomIndex2] = imagesLabelsArray[randomIndex2], imagesLabelsArray[randomIndex1]
+	print("Shuffling in progress")
+	orig_paths = np.array(imagesPathArray)
+	orig_labels = np.array(imagesLabelsArray)
+	permutations = np.random.permutation(orig_labels.shape[0])
+	imagesPathArray = orig_paths[permutations]
+	imagesLabelsArray =  orig_labels[permutations]
 	return imagesPathArray, imagesLabelsArray
 
 # def get_and_preprocess(path):
@@ -160,7 +159,7 @@ def getBatchOfLetterImages(batchSize=64):
 	dataset = np.ndarray(shape=(0, 784), dtype=np.float32)
 	labels = np.ndarray(shape=(0, TOTAL_ELEMENTS), dtype=np.float32)
 	with tf.Session(config=tf_config) as sess:
-		i = startIndexOfBatch
+		i = startIndexOfBatch + randint(0, 5)
 		if(i >= len(imagesPathArray)-1):
 			startIndexOfBatch = 0
 			i = 0
@@ -171,6 +170,7 @@ def getBatchOfLetterImages(batchSize=64):
 			folder = pathToImage[lastIndexOfSlash - 1] 
 			if(not pathToImage.endswith(".DS_Store")):
 				try:
+					# print(str(pathToImage))
 					imageContents = tf.read_file(str(pathToImage))
 					image = tf.image.decode_png(imageContents, dtype=tf.uint8, channels=1)
 					# image = get_and_preprocess(str(pathToImage))
@@ -179,6 +179,7 @@ def getBatchOfLetterImages(batchSize=64):
 					imarray = imarray.reshape(784)
 					appendingImageArray = np.array([imarray], dtype=np.float32)
 					appendingNumberLabel = np.array([getNumber(folder)], dtype=np.float32)
+					# print(appendingNumberLabel)
 					labels = np.append(labels, appendingNumberLabel, axis=0)
 					dataset = np.append(dataset, appendingImageArray, axis=0)
 					if(len(labels) >= batchSize):
@@ -208,7 +209,12 @@ def BeginTraining():
 	# Define loss and optimizer
 	# cross_entropy = -tf.reduce_sum(y_*tf.log(y_conv))
 	cross_entropy = -tf.reduce_sum(y_*tf.log( tf.clip_by_value(y_conv, 1e-10, 1.0) ))
-	train_step = tf.train.AdamOptimizer(trainingRate).minimize(cross_entropy)
+	regularizer = tf.nn.l2_loss(W_conv1)+tf.nn.l2_loss(W_conv2)
+	loss = tf.reduce_mean(cross_entropy+0.0001*regularizer)
+
+	# train_step = tf.train.AdamOptimizer(trainingRate).minimize(cross_entropy)
+	train_step = tf.train.AdamOptimizer(trainingRate).minimize(loss)
+	
 	correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -228,6 +234,7 @@ def BeginTraining():
 			print("Training Loop number: {} of {}".format(i, trainingLoops))
 			batchY, batchX = getBatchOfLetterImages(batchSize)
 			print(batchX.shape, batchY.shape)
+			# print(batchY)
 			if i%10 == 0:
 				train_accuracy = accuracy.eval(feed_dict={x:batchX, y_: batchY, keep_prob: 1.0})
 				print("step %d, training accuracy %g"%(i, train_accuracy))
