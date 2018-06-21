@@ -102,7 +102,7 @@ y_conv=tf.nn.softmax(tf.matmul(h_fc1, W_fc2) + b_fc2)
 
 # Training Parameters
 trainingRate = 0.00001
-trainingLoops = 500
+trainingLoops = 10000
 batchSize = 16
 
 # Tensorflow configuration to use CPU instead of GPU
