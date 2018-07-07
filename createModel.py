@@ -109,7 +109,7 @@ y_conv=tf.nn.softmax(tf.matmul(h_fc1, W_fc2) + b_fc2)
 # Training Parameters
 trainingRate = 0.0001
 trainingLoops = 500
-batchSize = 32
+batchSize = 8
 
 # Tensorflow configuration to use CPU instead of GPU
 tf_config = tf.ConfigProto(
@@ -171,7 +171,7 @@ def shuffleImagesPath(imagesPathArray, imagesLabelsArray):
 
 # This function returns the batch of images to be trained at each step
 def getBatchOfLetterImages(batchSize=64):
-	global startIndexOfBatch
+    	global startIndexOfBatch
 	global imagesPathArray
 	global imagesLabelsArray
 	global tf_config
