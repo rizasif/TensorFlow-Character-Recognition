@@ -1,3 +1,8 @@
+from kivy.config import Config
+Config.set('graphics', 'width', '600')
+Config.set('graphics', 'height', '300')
+Config.set('graphics', 'resizable', False)
+
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
@@ -7,19 +12,32 @@ from kivy.clock import Clock
 from kivy.garden.filebrowser import FileBrowser
 from os.path import sep, expanduser, isdir, dirname
 import multiprocessing as mp
+# from pathos.multiprocessing import ProcessingPool
+# import threading
 import time
 import sys
 import traceback
 from PIL import Image
+import os
+import pickle
+import subprocess
 
-import predict
-import createModel
+# os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
+
+# sys.setrecursionlimit(100000)
+
+import predictmultiple as predict
+# import predict
+# import createModel
 
 # Global variables to output messages
 selected_file_path = "No File Selected"
 error_message = "[color=f44336]{}[/color]"
 status_message = "{}"
 good_message = "[color=4CAF50]{}[/color]"
+
+global is_training
+is_training = False
 
 # Global reference to main app
 global_mainApp = None
@@ -70,6 +88,9 @@ class Process(mp.Process):
 	def run(self):
 		try:
 			mp.Process.run(self)
+			while self.is_alive():
+				return pickle.dumps(self)
+			# mp.Process.start(self)
 			self._cconn.send(None)
 		except Exception as e:
 			tb = traceback.format_exc()
@@ -88,26 +109,55 @@ def btn_browse(pos):
 		global selected_file_path
 
 		print ('pos: printed from root widget: {pos}'.format(pos=pos))
-		app = BrowseApp()
-		# app.setMainAPP(global_mainApp)
-		
-		p = Process(target=app.run)
-		p.start()
-		p.join()
-		
-		while p.is_alive():
-			time.sleep(0.5)
+		# subprocess.call(['python', 'opensel.py'])
+		# result = subprocess.check_output(['python', 'opensel.py'])
+		p = subprocess.getoutput(['python', 'opensel.py'])
+		# result = p.poll()
+		sp = p.split()
+		print("Output: ", sp[len(sp)-1])
+		path = sp[len(sp)-1]
 
-		path = ""
-		if p.exception:
-			print("found exception")
-			error, traceback = p.exception
-			# print "Caught Exception: ", str(traceback)
-			print ("Caught Error: {}".format(str(error)))
-			path = str(error)
 
+		# app = BrowseApp()
+		# # app.setMainAPP(global_mainApp)
+
+		# # p = mp.Pool()
+		# # p.apply_async(app.run)
+		# # p.close()
+		# # p.join()
+		
+		# p = Process(target=app.run)
+		# p.start()
+		# # p.run()
+		# p.join()
+
+		# # pool = mp.Pool()
+		# # pool.apply_async(p)
+		# # pool.close()
+		# # pool.join()
+
+		# while p.is_alive():
+		# 	print("Process is alive")
+		# 	time.sleep(0.5)
+
+		# # p = ProcessingPool().map(app.run, [])
+		# # time.sleep(100)
+
+		# # while p.is_alive():
+		# # 	# print("Process is alive")
+		# # 	time.sleep(0.5)
+
+		# path = ""
+		# if p[0].exception:
+		# 	print("found exception")
+		# 	error, traceback = p.exception
+		# 	# print "Caught Exception: ", str(traceback)
+		# 	print ("Caught Error: {}".format(str(error)))
+		# 	path = str(error)
+
+		# path = result
 		global_mainApp.update(main_label=path, status=good_message.format("Ready!"))
-		selected_file_path = path	
+		selected_file_path = path
 
 # This function is called when "Predict" Button is pressed
 def btn_predict(pos):
@@ -115,23 +165,32 @@ def btn_predict(pos):
 	global selected_file_path
 	print ("Strating Prediction")
 	try:
-		im=Image.open(selected_file_path)
-		image = predict.getImage(im)
+		# im=Image.open(selected_file_path)
+		# image = predict.getImage(im)
 		global_mainApp.update(status=status_message.format("Predicting..."))
-		predictedLetter = predict.predictLetter(image)
-		result = "PREDICTION RESULT = {}".format(predictedLetter[0])
+		predictedLetter = predict.predictMultiple(selected_file_path)
+		result = "PREDICTION RESULT = {}".format(predictedLetter)
 		global_mainApp.update(status=good_message.format(result))
-		# do stuff
+		
 	except IOError:
 		# filename not an image file
 		global_mainApp.update(status=error_message.format("Invalid Image or Path"))
 
 # This function is called when "Train" Button is pressed
 def btn_retrain(pos):
-	global global_mainApp
-	global_mainApp.update(status=status_message.format("Training..."))
-	createModel.BeginTraining()
-	global_mainApp.update(status=good_message.format("Ready!"))
+	global is_training
+	if not is_training:
+		global global_mainApp
+		global_mainApp.update(status=status_message.format("Training..."))
+		p = subprocess.Popen(['python', 'createModel.py'])
+		is_training = True
+	else:
+		global_mainApp.update(status=status_message.format("Model is still training"))
+	# result = p.poll()
+	# sp = p.split()
+	# print("Output: ", sp[len(sp)-1])
+	# path = sp[len(sp)-1]
+	# global_mainApp.update(status=good_message.format(path))
 
 
 # This is the class that represents the main screen and its buttons
@@ -154,15 +213,15 @@ class RootWidget(BoxLayout):
 		self.add_widget(self.MainLabel)
 
 		button_layout = BoxLayout(orientation='horizontal', pos=center)
-		btn1 = Button(text='Select File', size_hint = (None, 0.3), width=250, pos=center)
+		btn1 = Button(text='Select File', size_hint = (None, 0.5), width=200, pos=center)
 		btn1.bind(on_press=btn_browse)
 		button_layout.add_widget(btn1)
 
-		btn2 = Button(text='Predict', size_hint = (None, 0.3), width=250, pos = center)
+		btn2 = Button(text='Predict', size_hint = (None, 0.5), width=200, pos = center)
 		btn2.bind(on_press=btn_predict)
 		button_layout.add_widget(btn2)
 
-		btn3 = Button(text='Train', size_hint = (None, 0.3), width=250, pos = center)
+		btn3 = Button(text='Train', size_hint = (None, 0.5), width=200, pos = center)
 		btn3.bind(on_press=btn_retrain)
 		button_layout.add_widget(btn3)
 
@@ -209,3 +268,4 @@ class TestApp(App):
 # The main function
 if __name__ == '__main__':
 	TestApp().run()
+	# BrowseApp().run()

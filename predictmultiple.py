@@ -2,6 +2,8 @@ from scipy.misc import imread, imresize
 import numpy as np
 from keras.models import load_model
 import sys
+import isolate
+import math
 
 # Size of reduced image
 IMAGE_SIZE = 28
@@ -16,9 +18,10 @@ model = load_model('Model/cnn.h5')
 
 # This is the function to predict the letter
 def predictLetter(x):
-    print(x)
+    # print(x)
 
-    x = imread(x,mode='L')
+    # x = imread(x,mode='L')
+
     #compute a bit-wise inversion so black becomes white and vice versa
     x = np.invert(x)
     #make it the right size
@@ -32,8 +35,17 @@ def predictLetter(x):
     # print(folders[np.argmax(out)])
     return folders[np.argmax(out)]
 
+def predictMultiple(x):
+    imgList = isolate.getCharList(x)
+    num = 0
+    for i in range(len(imgList)):
+        img = imgList[i]
+        letter = predictLetter(img)
+        num += int(letter)*math.pow(10,len(imgList)-i-1)
+    return int(num)
+
 def main(argv):
-    predictedLetter = predictLetter(argv)
+    predictedLetter = predictMultiple(argv)
     print (predictedLetter)
     
 if __name__ == "__main__":
